@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["deno"]
+  output = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ApiKey {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  account   Account  @relation(fields: [accountId], references: [id], name: "AccountToApiKey")
+  accountId Int
+}
+
+model Account {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  password  String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  ApiKeys   ApiKey[]   @relation("AccountToApiKey")
+  endpoints Endpoint[]
+}
+
+model Endpoint {
+  id        Int        @id @default(autoincrement())
+  name      String
+  url       String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  account   Account    @relation(fields: [accountId], references: [id])
+  accountId Int
+  gauges    Gauge[]
+  redstones Redstone[]
+}
+
+model Gauge {
+  id         Int      @id @default(autoincrement())
+  name       String
+  value      Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  endpoint   Endpoint @relation(fields: [endpointId], references: [id])
+  endpointId Int
+}
+
+model Redstone {
+  id         Int      @id @default(autoincrement())
+  name       String
+  state      Boolean
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  endpoint   Endpoint @relation(fields: [endpointId], references: [id])
+  endpointId Int
+}

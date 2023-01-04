@@ -1,0 +1,27 @@
+node_modules
+# Keep environment variables out of version control
+.env
+generated
+
+### Deno ###
+/.idea/
+/.vscode/
+
+/node_modules
+
+.env
+*.orig
+*.pyc
+*.swp
+
+.yarn/*
+!.yarn/releases
+!.yarn/patches
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
+
+!.yarn/cache
+
+
