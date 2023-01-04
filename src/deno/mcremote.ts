@@ -4,7 +4,7 @@ import * as log from "https://deno.land/std@0.170.0/log/mod.ts"
 
 import { encode, decode } from "https://deno.land/std@0.170.0/encoding/base64.ts"
 
-import { PrismaClient } from "../generated/client/deno/edge.ts"
+import { PrismaClient } from "../../generated/client/deno/edge.ts"
 
 import { Input, Secret } from "https://deno.land/x/cliffy@v0.25.6/prompt/mod.ts"
 import { Command } from "https://deno.land/x/cliffy@v0.25.6/command/mod.ts"
