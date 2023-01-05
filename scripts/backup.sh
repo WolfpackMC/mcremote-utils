@@ -1,2 +1,7 @@
 
-deno run -A https://raw.githubusercontent.com/WolfpackMC/mcremote-utils/master/src/deno/s3_backup.ts -n $1 -d $2
+## unix timestamp
+timestamp=$(date +%s)
+
+zip -r $1-$timestamp.zip $2
+
+aws s3 cp $1-$timestamp.zip s3://$3
