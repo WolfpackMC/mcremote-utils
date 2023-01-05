@@ -36,7 +36,7 @@ const main = async () => {
             "-md=31",
             "-myx=9",
             "-mtm=-",
-            "-mmt",
+            "-mmt=12",
             "-mmtf",
             "-md=1536m",
             "-mmf=bt3",
