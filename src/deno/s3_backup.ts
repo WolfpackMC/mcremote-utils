@@ -30,7 +30,7 @@ const main = async () => {
             "7z",
             "a",
             "-t7z",
-            "-mx=9",
+            "-mx=5",
             "-mfb=273",
             "-ms",
             "-md=31",
