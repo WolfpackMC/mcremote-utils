@@ -35,10 +35,10 @@ const main = async () => {
         stderr: "piped",
     })
 
-    console.log("Running 7z to create a backup...")
+    console.log("Running zip to create a backup...")
 
     // Wait for the process to finish
-    const { code } = await p.status()
+    Deno.stdout.write(await p.output())
 
     const putObjectCommand = new PutObjectCommand({
         Bucket: "wolfpackmc",
