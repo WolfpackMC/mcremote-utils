@@ -8,10 +8,13 @@ import { PrismaClient } from "../../generated/client/deno/edge.ts"
 
 import { Input, Secret } from "https://deno.land/x/cliffy@v0.25.6/prompt/mod.ts"
 import { Command } from "https://deno.land/x/cliffy@v0.25.6/command/mod.ts"
+import { Account } from "../../generated/client/deno/index.d.ts"
 
 const { options } = await new Command()
     .option("-s, --salt=[salt]", "A custom salt.")
     .option("-g, --generate", "Generate a new password only.")
+    .option("-u, --username=[username]", "A custom username.")
+    .option("-a, --api-key", "Generate a new API key only.")
     .parse(Deno.args)
 
 const pepper = () => Deno.env.get("PEPPER") as string
@@ -83,31 +86,80 @@ const promptPassword: () => Promise<string> = async () => {
     return password
 }
 
-const promptUsername: () => Promise<string> = async () => {
+const findUser = async (username: string) => {
+    const user = await prisma.account.findUnique({
+        where: {
+            name: username,
+        },
+    })
+
+    if (!user) {
+        log.error("User not found")
+    }
+
+    return user
+}
+
+const promptUsername: (checkForDuplicate: boolean) => Promise<string> = async (checkForDuplicate = true) => {
     const name: string = await Input.prompt("Enter a username")
 
     if (!name) {
         log.warning("Username is required")
-        return promptUsername()
+        return promptUsername(checkForDuplicate)
     }
 
-    const out = await prisma.account.count({
-        where: {
-            name,
-        },
-    })
+    const out = await findUser(name)
 
     console.log(out)
 
-    if (out) {
+    if (out && checkForDuplicate) {
         log.warning("Username already exists")
-        return promptUsername()
+        return promptUsername(checkForDuplicate)
     }
     return name
 }
 
+
+const AddApiKey = async (account: Account) => {
+    const apiKey = await genApiKey()
+
+    await prisma.apiKey.create({
+        data: {
+            key: apiKey.encrypted,
+            account: {
+                connect: {
+                    id: account.id,
+                },
+            },
+        },
+    })
+
+    return apiKey.key
+}
+
 const main = async () => {
-    const username = options.generate ? "" : await promptUsername()
+
+    const username = typeof options.username === "string" ? options.username : await promptUsername(false)
+
+    if (options.apiKey) {
+
+        const user = await findUser(username)
+
+        if (!user) {
+            log.error("User not found")
+            Deno.exit(1)
+        }
+
+        log.info(user)
+
+        const apiKey = await AddApiKey(user)
+
+        log.info("Save this somewhere, you will not be able to see it again.")
+        log.info(`API Key: ${apiKey}`)
+        Deno.exit(0)
+    }
+
+
     const password = await promptPassword()
 
     const salt = typeof options.salt === "string" ? decode(options.salt) : genSalt()
@@ -132,24 +184,14 @@ const main = async () => {
         },
     })
 
-    const apiKey = await genApiKey()
-
-    await prisma.apiKey.create({
-        data: {
-            key: apiKey.encrypted,
-            account: {
-                connect: {
-                    id: account.id,
-                },
-            },
-        },
-    })
-
     if (account) {
+
+        const apiKey = await AddApiKey(account)
+
         log.info("Account created")
         log.info("Save this somewhere, you will not be able to see it again.")
         log.info(`Username: ${account.name}`)
-        log.info(`API Key: ${apiKey.key}`)
+        log.info(`API Key: ${apiKey}`)
     } else {
         log.error("Account creation failed")
         Deno.exit(1)
