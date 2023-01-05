@@ -47,12 +47,6 @@ const main = async () => {
     // Wait for the process to finish
     const { code } = await p.status()
 
-    if (code !== 0) {
-        const rawError = await p.stderrOutput()
-        Deno.stderr.write(rawError)
-        Deno.exit(code)
-    }
-
     const putObjectCommand = new PutObjectCommand({
         Bucket: "wolfpackmc",
         Key: `backups/${options.name}-${t}.7z`,
