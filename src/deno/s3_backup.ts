@@ -23,19 +23,12 @@ const timestamp = () => new Date().toISOString().replace(/:/g, "-").replace(/\..
 const main = async () => {
 
     const t = timestamp()
-
-    // Run 7z to create a backup on the ./backup folder
     const p = Deno.run({
         cmd: [
-            "7z",
-            "a",
-            "-t7z",
-            "-m0=lzma2",
-            "-mx=5",
-            "-mfb=64",
-            "-md=32m",
-            "-ms=on",
-            `/tmp/backup/${options.name}-${t}.7z`,
+            // use zip instead of 7z
+            "zip",
+            "-r",
+            `/tmp/backup/${options.name}-${t}.zip`,
             `${options.data}`,
         ],
         stdout: "piped",
